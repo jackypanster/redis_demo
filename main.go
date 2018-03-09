@@ -83,7 +83,7 @@ func Monitor(total int, buff1 *[]int, buff2 *[]int) {
 			log.Printf("complete %d jobs", total)
 			return
 		}
-		time.Sleep(time.Second * 2)
+		time.Sleep(time.Second)
 	}
 }
 
@@ -106,7 +106,7 @@ func main() {
 	buff2 := []int{}
 	wg.Add(1)
 
-	n := 100000
+	n := 10000000
 	go Produce(n)
 
 	go Consume(&buff1)
