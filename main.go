@@ -19,7 +19,7 @@ func Produce(count int) {
 		if err != nil {
 			log.Panicf("fail to RPUSH %+v", err)
 		}
-		time.Sleep(time.Millisecond)
+		//time.Sleep(time.Millisecond)
 	}
 	log.Printf("produce %d jobs", count)
 }
@@ -57,12 +57,12 @@ func Consume(buff *[]int) {
 		}
 		if err == nil && n > 0 {
 			*buff = append(*buff, n)
-			time.Sleep(time.Millisecond)
+			time.Sleep(time.Millisecond * 1)
 		}
 	}
 }
 
-func Monitor(total int, buff1 *[]int, buff2 *[]int) {
+func Monitor(total int, buffs ...*[]int) {
 	c := pool.Get()
 	defer func() {
 		c.Close()
@@ -75,15 +75,23 @@ func Monitor(total int, buff1 *[]int, buff2 *[]int) {
 		}
 
 		log.Printf("remains %d jobs", size)
-		l1 := len(*buff1)
+		/*l1 := len(*buff1)
 		l2 := len(*buff2)
+		l3 := len(*buff3)
 		log.Printf("[worker#1] has finished %d jobs", l1)
 		log.Printf("[worker#2] has finished %d jobs", l2)
-		if l1+l2 == total {
+		log.Printf("[worker#3] has finished %d jobs", l3)*/
+		sum := 0
+		for idx, buff := range buffs {
+			done := len(*buff)
+			sum += done
+			log.Printf("[worker#%d] has finished %d jobs", idx, done)
+		}
+		if sum == total {
 			log.Printf("complete %d jobs", total)
 			return
 		}
-		time.Sleep(time.Second)
+		time.Sleep(time.Minute)
 	}
 }
 
@@ -104,6 +112,12 @@ func main() {
 	start := time.Now()
 	buff1 := []int{}
 	buff2 := []int{}
+	buff3 := []int{}
+	buff4 := []int{}
+	buff5 := []int{}
+	buff6 := []int{}
+	buff7 := []int{}
+	buff8 := []int{}
 	wg.Add(1)
 
 	n := 10000000
@@ -111,9 +125,21 @@ func main() {
 
 	go Consume(&buff1)
 
-	//go BConsume(&buff2)
+	go Consume(&buff2)
 
-	go Monitor(n, &buff1, &buff2)
+	go Consume(&buff3)
+
+	go Consume(&buff4)
+
+	go Consume(&buff5)
+
+	go Consume(&buff6)
+
+	go Consume(&buff7)
+
+	go Consume(&buff8)
+
+	go Monitor(n, &buff1, &buff2, &buff3, &buff4, &buff5, &buff6, &buff7, &buff8)
 
 	wg.Wait()
 	log.Printf("%s", time.Now().Sub(start))
