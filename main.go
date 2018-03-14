@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"strconv"
 	"sync"
 	"time"
 
@@ -15,16 +14,22 @@ func Produce(count int) {
 	defer c.Close()
 
 	for i := 1; i <= count; i++ {
-		_, err := c.Do("RPUSH", LIST, i)
-		if err != nil {
-			log.Panicf("fail to RPUSH %+v", err)
+		if i % 2 == 0 {
+			_, err := c.Do("RPUSH", LIST_B, i)
+			if err != nil {
+				log.Panicf("fail to RPUSH %+v", err)
+			}
+		} else {
+			_, err := c.Do("RPUSH", LIST_A, i)
+			if err != nil {
+				log.Panicf("fail to RPUSH %+v", err)
+			}
 		}
-		//time.Sleep(time.Millisecond)
 	}
 	log.Printf("produce %d jobs", count)
 }
 
-func BConsume(buff *[]int) {
+/*func BConsume(buff *[]int) {
 	c := pool.Get()
 	defer c.Close()
 
@@ -44,14 +49,14 @@ func BConsume(buff *[]int) {
 			}
 		}
 	}
-}
+}*/
 
-func Consume(buff *[]int) {
+func Consume(buff *[]int, list string) {
 	c := pool.Get()
 	defer c.Close()
 
 	for {
-		n, err := redis.Int(c.Do("LPOP", LIST))
+		n, err := redis.Int(c.Do("LPOP", list))
 		if err != nil && err != redis.ErrNil {
 			log.Panic("fail to LPOP %+v", err)
 		}
@@ -69,12 +74,19 @@ func Monitor(total int, buffs ...*[]int) {
 		wg.Done()
 	}()
 	for {
-		size, err := redis.Int(c.Do("LLEN", LIST))
+		size, err := redis.Int(c.Do("LLEN", LIST_A))
 		if err != nil {
 			log.Panicf("fail to LLEN %+v", err)
 		}
 
-		log.Printf("remains %d jobs", size)
+		log.Printf("remains %d jobs of A", size)
+
+		size, err = redis.Int(c.Do("LLEN", LIST_B))
+		if err != nil {
+			log.Panicf("fail to LLEN %+v", err)
+		}
+
+		log.Printf("remains %d jobs of B", size)
 		/*l1 := len(*buff1)
 		l2 := len(*buff2)
 		l3 := len(*buff3)
@@ -91,7 +103,7 @@ func Monitor(total int, buffs ...*[]int) {
 			log.Printf("complete %d jobs", total)
 			return
 		}
-		time.Sleep(time.Minute)
+		time.Sleep(time.Second * 2)
 	}
 }
 
@@ -101,7 +113,8 @@ var (
 )
 
 const (
-	LIST = "queue"
+	LIST_A = "queue_a"
+	LIST_B = "queue_b"
 )
 
 func init() {
@@ -120,24 +133,24 @@ func main() {
 	buff8 := []int{}
 	wg.Add(1)
 
-	n := 10000000
+	n := 1000000
 	go Produce(n)
 
-	go Consume(&buff1)
+	go Consume(&buff1, LIST_A)
 
-	go Consume(&buff2)
+	go Consume(&buff2, LIST_A)
 
-	go Consume(&buff3)
+	go Consume(&buff3, LIST_A)
 
-	go Consume(&buff4)
+	go Consume(&buff4, LIST_A)
 
-	go Consume(&buff5)
+	go Consume(&buff5, LIST_B)
 
-	go Consume(&buff6)
+	go Consume(&buff6, LIST_B)
 
-	go Consume(&buff7)
+	go Consume(&buff7, LIST_B)
 
-	go Consume(&buff8)
+	go Consume(&buff8, LIST_B)
 
 	go Monitor(n, &buff1, &buff2, &buff3, &buff4, &buff5, &buff6, &buff7, &buff8)
 
