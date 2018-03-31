@@ -110,37 +110,125 @@ func init() {
 
 func main() {
 	start := time.Now()
-	buff1 := []int{}
-	buff2 := []int{}
-	buff3 := []int{}
-	buff4 := []int{}
-	buff5 := []int{}
-	buff6 := []int{}
-	buff7 := []int{}
-	buff8 := []int{}
-	wg.Add(1)
+	//wg.Add(16)
+	/*buff1 := []int{}
+		buff2 := []int{}
+		buff3 := []int{}
+		buff4 := []int{}
+		buff5 := []int{}
+		buff6 := []int{}
+		buff7 := []int{}
+		buff8 := []int{}
+		wg.Add(1)
 
-	n := 10000000
-	go Produce(n)
+		n := 10000000
+		go Produce(n)
 
-	go Consume(&buff1)
+		go Consume(&buff1)
 
-	go Consume(&buff2)
+		go Consume(&buff2)
 
-	go Consume(&buff3)
+		go Consume(&buff3)
 
-	go Consume(&buff4)
+		go Consume(&buff4)
 
-	go Consume(&buff5)
+		go Consume(&buff5)
 
-	go Consume(&buff6)
+		go Consume(&buff6)
 
-	go Consume(&buff7)
+		go Consume(&buff7)
 
-	go Consume(&buff8)
+		go Consume(&buff8)
 
-	go Monitor(n, &buff1, &buff2, &buff3, &buff4, &buff5, &buff6, &buff7, &buff8)
+		go Monitor(n, &buff1, &buff2, &buff3, &buff4, &buff5, &buff6, &buff7, &buff8)
 
-	wg.Wait()
-	log.Printf("%s", time.Now().Sub(start))
+	    wg.Wait()*/
+
+	count := 0
+	out := make(chan int, Total)
+	go Create(Total / 4)
+	go Create(Total / 4)
+	go Create(Total / 4)
+	go Create(Total / 4)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	go Process(out)
+	for {
+		select {
+		case n, ok := <-out:
+			if ok && n > 0 {
+				count++
+				//fmt.Println(n)
+				if count == Total {
+					log.Printf("%s", time.Now().Sub(start))
+					return
+				}
+			} else {
+				log.Panic("error occurs")
+			}
+		}
+	}
+	//wg.Wait()
+	//log.Printf("%s", time.Now().Sub(start))
 }
